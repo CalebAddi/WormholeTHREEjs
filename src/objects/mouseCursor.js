@@ -1,4 +1,6 @@
-function mouseCursor(mouse, pointer, scene)
+import { Raycaster } from "three";
+
+export function mouseCursor(mouse, pointer, scene = new THREE.Scene())
 {
     let isMouseOnScreen = false;
     pointer.visible = false;
@@ -28,4 +30,17 @@ function mouseCursor(mouse, pointer, scene)
     initPointerlight();
 }
 
-export default mouseCursor;
+export function updatePointPosition(mouse, pointer, camera)
+{
+    const raycaster = new Raycaster();
+
+    // Create raycast from curr camera positon and orientation
+    raycaster.setFromCamera(mouse, camera);
+
+    // Position pointer at fixed dist from camera
+    const dist = 5;
+    const pointPos = raycaster.ray.origin.clone().add(
+        raycaster.ray.direction.multiplyScalar(dist)
+    );
+    pointer.position.copy(pointPos);
+}

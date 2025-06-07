@@ -1,8 +1,9 @@
 import *  as THREE from 'three';
 import renderer from './components/renderer';
 import lighting from './components/lighting';
-import mouseCursor from './objects/mouseCursor';
+import { mouseCursor, updatePointPosition } from './objects/mouseCursor';
 import starfield from './objects/starfield';
+import { createFloatingSpheres, updateSpheres } from './objects/spheres';
 import spline from "./components/spline";
 import handleWindowResize from './components/windowResizer';
 
@@ -36,9 +37,6 @@ const pointSphereMat = new THREE.MeshStandardMaterial({
 });
 pointer = new THREE.Mesh(pointSphere, pointSphereMat);
 
-// Raycast
-const raycaster = new THREE.Raycaster();
-
 //#endregion
 
 //#region !-- Geometry Variables --!
@@ -71,21 +69,11 @@ function updateCamera(t)
 // Mouse
 mouseCursor(mouse, pointer, scene);
 
-function updatePointPosition()
-{
-    // Create raycast from curr camera positon and orientation
-    raycaster.setFromCamera(mouse, camera);
-
-    // Position pointer at fixed dist from camera
-    const dist = 5;
-    const pointPos = raycaster.ray.origin.clone().add(
-        raycaster.ray.direction.multiplyScalar(dist)
-    );
-    pointer.position.copy(pointPos);
-}
-
 // Starfield
 starfield(scene);
+
+// Floating spheres along spline
+createFloatingSpheres(spline, scene);
 
 // Animate
 function animate(t = 0)
@@ -93,7 +81,8 @@ function animate(t = 0)
     requestAnimationFrame(animate);
 
     updateCamera(t);
-    updatePointPosition();
+    // updateSpheres(t);
+    updatePointPosition(mouse, pointer, camera);
     composer.render();
 }
 animate();

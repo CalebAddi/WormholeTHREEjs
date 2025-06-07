@@ -1,6 +1,6 @@
 import { BufferAttribute, BufferGeometry, Points, PointsMaterial } from "three";
 
-function starfield(scene)
+function starfield(scene = new THREE.Scene())
 {
     const geometry = new BufferGeometry();
     const material = new PointsMaterial({
