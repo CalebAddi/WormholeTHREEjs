@@ -1,18 +1,47 @@
 import *  as THREE from 'three';
 import renderer from './components/renderer';
 import lighting from './components/lighting';
+import mouseCursor from './objects/mouseCursor';
+import starfield from './objects/starfield';
 import spline from "./components/spline";
 import handleWindowResize from './components/windowResizer';
+
+//#region !-- Global Variables --!
 
 // Create Scene
 const width = window.innerWidth;
 const height = window.innerHeight;
 const scene = new THREE.Scene();
 
+// Camera
 const camera = new THREE.PerspectiveCamera(75, width / height, 0.06, 1000);
 camera.position.set(0, 0, 40);
 
+// Lighting (lighting.js)
 const composer = lighting(scene, camera, renderer);
+
+// Mouse pointer
+let pointer = null;
+const mouse = {
+    x: 0,
+    y: 0
+};
+const pointSphere = new THREE.SphereGeometry(0.15, 32, 32);
+const pointSphereMat = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    emissive: 0xff8888,
+    emissiveIntensity: 12.0,
+    transparent: true,
+    opacity: 0.2
+});
+pointer = new THREE.Mesh(pointSphere, pointSphereMat);
+
+// Raycast
+const raycaster = new THREE.Raycaster();
+
+//#endregion
+
+//#region !-- Geometry Variables --!
 
 // Create tube geometry from spline
 const tubeGeo = new THREE.TubeGeometry(spline, 222, 1.5, 20, true);
@@ -23,6 +52,11 @@ const lineMat = new THREE.LineBasicMaterial({ color: 0x00ffff });
 const lineEdges = new THREE.LineSegments(edgeGeo, lineMat);
 scene.add(lineEdges);
 
+//#endregion
+
+//#region !-- Update / Function Calls --!
+
+// Camera
 function updateCamera(t)
 {
     const time = t * 0.075;
@@ -34,14 +68,37 @@ function updateCamera(t)
     camera.lookAt(lookAt);
 }
 
+// Mouse
+mouseCursor(mouse, pointer, scene);
 
+function updatePointPosition()
+{
+    // Create raycast from curr camera positon and orientation
+    raycaster.setFromCamera(mouse, camera);
+
+    // Position pointer at fixed dist from camera
+    const dist = 5;
+    const pointPos = raycaster.ray.origin.clone().add(
+        raycaster.ray.direction.multiplyScalar(dist)
+    );
+    pointer.position.copy(pointPos);
+}
+
+// Starfield
+starfield(scene);
+
+// Animate
 function animate(t = 0)
 {
     requestAnimationFrame(animate);
 
     updateCamera(t);
+    updatePointPosition();
     composer.render();
 }
 animate();
 
-handleWindowResize(camera, renderer);
+//#endregion
+
+// Window resizer (windowResizer.js)
+handleWindowResize(camera, renderer, composer);
