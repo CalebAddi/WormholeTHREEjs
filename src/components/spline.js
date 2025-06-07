@@ -27,6 +27,7 @@ for (let i = 0; i < len; i += 3)
     ));
 }
 
+// Set the curve to be closed for loop
 const spline = new CatmullRomCurve3(points, true);
 
 export default spline;
