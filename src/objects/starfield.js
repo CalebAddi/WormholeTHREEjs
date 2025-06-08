@@ -1,6 +1,6 @@
 import { BufferAttribute, BufferGeometry, Points, PointsMaterial } from "three";
 
-function starfield(scene = new THREE.Scene())
+export default function starfield(scene)
 {
     const geometry = new BufferGeometry();
     const material = new PointsMaterial({
@@ -22,5 +22,3 @@ function starfield(scene = new THREE.Scene())
     starfield.frustumCulled = false; // Disable frustum culling for starfield
     scene.add(starfield);
 }
-
-export default starfield;

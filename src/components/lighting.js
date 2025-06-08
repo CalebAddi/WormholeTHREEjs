@@ -1,10 +1,12 @@
 import * as THREE from 'three';
 import { RenderPass, UnrealBloomPass, EffectComposer } from "three/examples/jsm/Addons.js";
 
-function lighting(scene, camera, renderer)
+export default function lighting(scene, camera, renderer)
 {
+    // Fog
     scene.fog = new THREE.FogExp2(0x000000, 0.065);
 
+    // Render Pass and Unreal Bloom
     const rendPass = new RenderPass(scene, camera);
     const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 100);
     bloomPass.threshold = 0.01;
@@ -20,5 +22,3 @@ function lighting(scene, camera, renderer)
 
     return composer;
 }
-
-export default lighting;

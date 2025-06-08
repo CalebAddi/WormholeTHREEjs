@@ -6,7 +6,7 @@ const sphereCount = 50;
 const tubeRadius = 1.5;
 const safeZoneRadius = 0.6;
 
-export function createFloatingSpheres(spline, scene = new THREE.Scene())
+export function createFloatingSpheres(spline, scene)
 {
     const geometry = new SphereGeometry(0.08, 16, 16);
     const material = [
@@ -51,7 +51,7 @@ export function createFloatingSpheres(spline, scene = new THREE.Scene())
         sphere.userData = {
             originalPosition: sphere.position.clone(),
             bobSpeed: 0.5 + Math.random() * 1.5,
-            boboffset: Math.random() * Math.PI * 2,
+            bobOffset: Math.random() * Math.PI * 2,
             bobAltitude: 0.02 + Math.random() * 0.05,
             floatSpeed: 0.3 + Math.random() * 0.7,
             floatOffset: Math.random() * Math.PI * 2,
@@ -67,11 +67,11 @@ export function createFloatingSpheres(spline, scene = new THREE.Scene())
 export function updateSpheres(t)
 {
     const time = t * 0.0035;
-
+    
     for (let i = 0; i < spheres.length; i++)
-    {
-        const sphere = spheres[i];
-        const data = sphere.userData;
+        {
+            const sphere = spheres[i];
+            const data = sphere.userData;
 
         // Bob effect
         const bobY = Math.sin(time * data.bobSpeed + data.bobOffset) * data.bobAltitude;
@@ -80,9 +80,12 @@ export function updateSpheres(t)
         const floatX = Math.cos(time * data.floatSpeed + data.floatOffset) * data.floatAmplitude;
         const floatZ = Math.sin(time * data.floatSpeed * 0.7 + data.floatOffset) * data.floatAmplitude;
 
-        sphere.position.copy(data.originalPosition);
-        sphere.position.x += floatX;
-        sphere.position.y += bobY;
-        sphere.position.z += floatZ;
+        if (isFinite(bobY) && isFinite(floatX) && isFinite(floatZ))
+        {
+            sphere.position.copy(data.originalPosition);
+            sphere.position.x += floatX;
+            sphere.position.y += bobY;
+            sphere.position.z += floatZ;
+        }
     }
 }

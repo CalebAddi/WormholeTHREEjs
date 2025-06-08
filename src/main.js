@@ -6,6 +6,7 @@ import starfield from './objects/starfield';
 import { createFloatingSpheres, updateSpheres } from './objects/spheres';
 import spline from "./components/spline";
 import handleWindowResize from './components/windowResizer';
+import { OrbitControls } from 'three/examples/jsm/Addons.js';
 
 //#region !-- Global Variables --!
 
@@ -27,7 +28,7 @@ const mouse = {
     x: 0,
     y: 0
 };
-const pointSphere = new THREE.SphereGeometry(0.15, 32, 32);
+const pointSphere = new THREE.SphereGeometry(0.07, 32, 32);
 const pointSphereMat = new THREE.MeshStandardMaterial({
     color: 0xffffff,
     emissive: 0xff8888,
@@ -53,6 +54,11 @@ scene.add(lineEdges);
 //#endregion
 
 //#region !-- Update / Function Calls --!
+
+// Controls (Testing Scene)
+// const controls = new OrbitControls(camera, renderer.domElement);
+// controls.enableDamping = true;
+// controls.dampingFactor = 0.03;
 
 // Camera
 function updateCamera(t)
@@ -81,9 +87,10 @@ function animate(t = 0)
     requestAnimationFrame(animate);
 
     updateCamera(t);
-    // updateSpheres(t);
+    updateSpheres(t);
     updatePointPosition(mouse, pointer, camera);
     composer.render();
+    // controls.update();
 }
 animate();
 

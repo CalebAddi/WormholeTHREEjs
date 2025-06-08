@@ -1,4 +1,4 @@
-function handleWindowResize(camera, renderer, composer = null)
+export default function handleWindowResize(camera, renderer, composer = null)
 {
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
@@ -12,5 +12,3 @@ function handleWindowResize(camera, renderer, composer = null)
 
     }, false);
 }
-
-export default handleWindowResize;
