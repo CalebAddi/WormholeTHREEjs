@@ -5,31 +5,41 @@ export function mouseCursor(mouse, pointer, scene)
     let isMouseOnScreen = undefined;
     pointer.visible = false;
 
+    const mouseEnterHandler = (e) => {
+        isMouseOnScreen = true;
+        pointer.visible = true;
+    };
+
+    const mouseLeaveHandler = (e) => {
+        isMouseOnScreen = false;
+        pointer.visible = false;
+    };
+
+    const mouseMoveHandler = (e) => {
+        mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+        if (isMouseOnScreen)
+        {
+            document.body.style.cursor = 'none';
+        }
+    }
+
     function initPointerlight()
     {
         scene.add(pointer);
-
-        document.addEventListener('mouseenter', (e) => {
-            isMouseOnScreen = true;
-            pointer.visible = true;
-        }, false);
-
-        document.addEventListener('mouseleave', (e) => {
-            isMouseOnScreen = false;
-            pointer.visible = false;
-        }, false);
-
-        document.addEventListener('mousemove', (e) => {
-            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-
-            if (isMouseOnScreen)
-            {
-                document.body.style.cursor = 'none';
-            }
-        }, false);
+        document.addEventListener('mouseenter', mouseEnterHandler, false);
+        document.addEventListener('mouseleave', mouseLeaveHandler, false);
+        document.addEventListener('mousemove', mouseMoveHandler, false);
     }
     initPointerlight();
+
+    return () => {
+        document.removeEventListener('mouseenter', mouseEnterHandler);
+        document.removeEventListener('mouseleave', mouseLeaveHandler);
+        document.removeEventListener('mousemove', mouseMoveHandler);
+        document.body.style.cursor = 'auto';
+    }
 }
 
 export function updatePointPosition(mouse, pointer, camera)
