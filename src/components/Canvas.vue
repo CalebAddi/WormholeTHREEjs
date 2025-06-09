@@ -1,7 +1,3 @@
-<template>
-    <div ref="threeContainer" class="three-container"></div>
-</template>
-
 <script setup>
 
     import { onMounted, onUnmounted, ref } from 'vue';
@@ -130,6 +126,10 @@
     //#endregion
 
 </script>
+
+<template>
+    <div ref="threeContainer" class="three-container"></div>
+</template>
 
 <style scoped>
     body
