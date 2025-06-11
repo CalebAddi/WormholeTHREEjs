@@ -15,90 +15,112 @@
     let animationID = null;
     let renderer = null;
     let cleanupMouse = null;
+    let cleanupResizeEvents = null;
+    let isDestoyed = false;
+
+    // Performance Monitor Values
+    let lastTime = 0;
+    const targFrameT = 1000 / 60;  // Target max frames to 60 fps
 
     //#region !-- On Mounted --!
     onMounted(() => {
-        //#region !-- Global Variables --!
-
-        // Create Scene
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-
-        renderer = new THREE.WebGLRenderer({
-            antialias: false,
-            powerPreference: "high-performance"
-        });
-
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.outputColorSpace = THREE.SRGBColorSpace;
-
-        // Camera
-        const camera = new THREE.PerspectiveCamera(75, width / height, 0.06, 1000);
-        camera.position.set(0, 0, 40);
-
-        // Lighting (lighting.js)
-        const composer = lighting(scene, camera, renderer);
-
-        // Mouse pointer
-        let pointer = null;
-        const mouse = {
-            x: 0,
-            y: 0
-        };
-        const pointSphere = new THREE.SphereGeometry(0.07, 32, 32);
-        const pointSphereMat = new THREE.MeshStandardMaterial({
-            color: 0xffffff,
-            emissive: 0xff8888,
-            emissiveIntensity: 12.0,
-            transparent: true,
-            opacity: 0.2
-        });
-        pointer = new THREE.Mesh(pointSphere, pointSphereMat);
-
-        // Create tube geometry from spline
-        const tubeGeo = new THREE.TubeGeometry(spline, 222, 1.5, 20, true);
-
-        // Create edge geometry from spline
-        const edgeGeo = new THREE.EdgesGeometry(tubeGeo, 0.2);
-        const lineMat = new THREE.LineBasicMaterial({ color: 0x00ffff });
-        const lineEdges = new THREE.LineSegments(edgeGeo, lineMat);
-        scene.add(lineEdges);
-
-        //#endregion
-
-        //#region !-- Function Calls --!
-
-        // Mouse
-        cleanupMouse = mouseCursor(mouse, pointer, scene);
-
-        // Starfield
-        starfield(scene);
-
-        // Floating spheres along spline
-        createFloatingSpheres(spline, scene);
-
-        // Canvas container
-        if (threeContainer.value) 
+        try
         {
-            threeContainer.value.appendChild(renderer.domElement);
-        }
+            //#region !-- Global Variables --!
 
-        // Animate
-        function animate(t = 0)
+            // Create Scene
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            renderer = new THREE.WebGLRenderer({
+                antialias: false,
+                powerPreference: "high-performance"
+            });
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+            // Camera
+            const camera = new THREE.PerspectiveCamera(75, width / height, 0.06, 1000);
+            camera.position.set(0, 0, 40);
+
+            // Lighting (lighting.js)
+            const composer = lighting(scene, camera, renderer);
+
+            // Mouse pointer
+            let pointer = null;
+            const mouse = {
+                x: 0,
+                y: 0
+            };
+            const pointSphere = new THREE.SphereGeometry(0.07, 32, 32);
+            const pointSphereMat = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                emissive: 0xff8888,
+                emissiveIntensity: 12.0,
+                transparent: true,
+                opacity: 0.2
+            });
+            pointer = new THREE.Mesh(pointSphere, pointSphereMat);
+
+            // Create tube geometry from spline
+            const tubeGeo = new THREE.TubeGeometry(spline, 222, 1.5, 20, true);
+
+            // Create edge geometry from spline
+            const edgeGeo = new THREE.EdgesGeometry(tubeGeo, 0.2);
+            const lineMat = new THREE.LineBasicMaterial({ color: 0x00ffff });
+            const lineEdges = new THREE.LineSegments(edgeGeo, lineMat);
+            scene.add(lineEdges);
+
+            //#endregion
+
+            //#region !-- Function Calls --!
+
+            // Starfield
+            starfield(scene);
+
+            // Floating spheres along spline
+            createFloatingSpheres(spline, scene);
+
+            // Canvas container
+            if (threeContainer.value) 
+            {
+                threeContainer.value.appendChild(renderer.domElement);
+            }
+
+            // Animate
+            function animate(t)
+            {
+                if (isDestoyed) return;
+
+                if (t - lastTime < targFrameT)
+                {
+                    animationID = requestAnimationFrame(animate);
+                    return;
+                }
+                lastTime = t;
+
+                updateCamera(t, tubeGeo, camera);
+                updateSpheres(t);
+                updatePointPosition(mouse, pointer, camera);
+                composer.render();
+                animationID = requestAnimationFrame(animate);
+            }
+
+            // Mouse
+            cleanupMouse = mouseCursor(mouse, pointer, scene);
+
+            // Window resizer
+            cleanupResizeEvents = handleWindowResize(camera, renderer, composer);
+
+            animate(0);
+        }
+        catch (error)
         {
-            animationID = requestAnimationFrame(animate);
-
-            updateCamera(t, tubeGeo, camera);
-            updateSpheres(t);
-            updatePointPosition(mouse, pointer, camera);
-            composer.render();
+            console.error('Failed to initialize: ', error);
+            isDestoyed = true;
         }
-
-        // Window resizer
-        handleWindowResize(camera, renderer, composer);
-
-        animate();
 
         //#endregion
     });
@@ -106,19 +128,30 @@
 
     //#region !-- On Unmounted --!
     onUnmounted(() => {
+        isDestoyed = true;
+
         if (animationID)
         {
             cancelAnimationFrame(animationID);
+            animationID = null;
         }
 
         if (renderer)
         {
             renderer.dispose();
+            renderer = null;
         }
 
         if (cleanupMouse)
         {
             cleanupMouse();
+            cleanupMouse = null;
+        }
+
+        if (cleanupResizeEvents)
+        {
+            handleWindowResize();
+            cleanupResizeEvents = null;
         }
 
         scene.clear();
@@ -132,8 +165,8 @@
 </template>
 
 <style scoped>
-    body
+    .three-container
     {
-        z-index: -1;
+        overflow: hidden;
     }
 </style>

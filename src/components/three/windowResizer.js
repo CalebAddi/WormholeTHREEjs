@@ -1,6 +1,6 @@
 export default function handleWindowResize(camera, renderer, composer = null)
 {
-    window.addEventListener('resize', () => {
+    const handleResize = () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -9,6 +9,11 @@ export default function handleWindowResize(camera, renderer, composer = null)
         {
             composer.setSize(window.innerWidth, window.innerHeight);
         }
+    };
 
-    }, false);
+    window.addEventListener('resize', handleResize, false);
+
+    return () => {
+        window.removeEventListener('resize', handleResize);
+    };
 }
