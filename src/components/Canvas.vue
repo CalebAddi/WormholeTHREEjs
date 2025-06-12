@@ -2,6 +2,7 @@
 
     import { onMounted, onUnmounted, ref } from 'vue';
     import *  as THREE from 'three';
+    import RAPIER from '@dimforge/rapier3d-compat';
     import updateCamera from '/src/components/three/camera';
     import lighting from '/src/components/three/lighting';
     import { mouseCursor, updatePointPosition } from '/src/objects/mouseCursor';
@@ -16,6 +17,7 @@
     let renderer = null;
     let cleanupMouse = null;
     let cleanupResizeEvents = null;
+    let world = null;
     let isDestoyed = false;
 
     // Performance Monitor Values
@@ -23,10 +25,15 @@
     const targFrameT = 1000 / 60;  // Target max frames to 60 fps
 
     //#region !-- On Mounted --!
-    onMounted(() => {
+    onMounted(async () => {
         try
         {
             //#region !-- Global Variables --!
+
+            // Rapier Physics
+            await RAPIER.init();
+            const gravity = new RAPIER.Vector3(0.0, -1.0, 0.0);
+            world = new RAPIER.World(gravity);
 
             // Create Scene
             const width = window.innerWidth;
@@ -43,7 +50,7 @@
 
             // Camera
             const camera = new THREE.PerspectiveCamera(75, width / height, 0.06, 1000);
-            camera.position.set(0, 0, 40);
+            camera.position.set(0, 0, 10);
 
             // Lighting (lighting.js)
             const composer = lighting(scene, camera, renderer);
@@ -101,6 +108,7 @@
                 }
                 lastTime = t;
 
+                world.step();
                 updateCamera(t, tubeGeo, camera);
                 updateSpheres(t);
                 updatePointPosition(mouse, pointer, camera);
@@ -134,6 +142,12 @@
         {
             cancelAnimationFrame(animationID);
             animationID = null;
+        }
+
+        if (world)
+        {
+            world.free();
+            world = null;
         }
 
         if (renderer)
