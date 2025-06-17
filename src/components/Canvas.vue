@@ -18,7 +18,7 @@
     let cleanupMouse = null;
     let cleanupResizeEvents = null;
     let world = null;
-    let isDestoyed = false;
+    let isDestroyed = false;
 
     // Performance Monitor Values
     let lastTime = 0;
@@ -99,7 +99,7 @@
             // Animate
             function animate(t)
             {
-                if (isDestoyed) return;
+                if (isDestroyed) return;
 
                 if (t - lastTime < targFrameT)
                 {
@@ -127,7 +127,7 @@
         catch (error)
         {
             console.error('Failed to initialize: ', error);
-            isDestoyed = true;
+            isDestroyed = true;
         }
 
         //#endregion
@@ -136,39 +136,23 @@
 
     //#region !-- On Unmounted --!
     onUnmounted(() => {
-        isDestoyed = true;
-
-        if (animationID)
+        try
         {
-            cancelAnimationFrame(animationID);
-            animationID = null;
-        }
+            isDestroyed = true;
 
-        if (world)
+            animationID && cancelAnimationFrame(animationID);
+            world?.free();
+            renderer?.dispose();
+            cleanupMouse?.();
+            cleanupResizeEvents?.();
+            scene.clear();
+
+            [animationID, world, renderer, cleanupMouse, cleanupResizeEvents] = Array(5).fill(null);
+        }
+        catch (error)
         {
-            world.free();
-            world = null;
+            console.warn('Cleanup error: ', error);
         }
-
-        if (renderer)
-        {
-            renderer.dispose();
-            renderer = null;
-        }
-
-        if (cleanupMouse)
-        {
-            cleanupMouse();
-            cleanupMouse = null;
-        }
-
-        if (cleanupResizeEvents)
-        {
-            handleWindowResize();
-            cleanupResizeEvents = null;
-        }
-
-        scene.clear();
     });
     //#endregion
 
