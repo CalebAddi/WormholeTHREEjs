@@ -12,7 +12,7 @@
     import handleWindowResize from '/src/components/three/windowResizer';
 
     const scene = new THREE.Scene();
-    const threeContainer = ref(null);
+    let threeContainer = ref(null);
     let animationID = null;
     let renderer = null;
     let cleanupMouse = null;
@@ -147,7 +147,7 @@
             cleanupResizeEvents?.();
             scene.clear();
 
-            [animationID, world, renderer, cleanupMouse, cleanupResizeEvents] = Array(5).fill(null);
+            [animationID, world, renderer, cleanupMouse, cleanupResizeEvents, threeContainer] = Array(6).fill(null);
         }
         catch (error)
         {
