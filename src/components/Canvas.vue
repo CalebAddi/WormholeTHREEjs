@@ -29,7 +29,7 @@
         {
             //#region !-- Global Variables --!
 
-            // Rapier Physics
+            // Rapier Physics (will do something with physics later)
             await RAPIER.init();
             const gravity = new RAPIER.Vector3(0.0, -1.0, 0.0);
             world = new RAPIER.World(gravity);
@@ -122,14 +122,14 @@
             cleanupResizeEvents = handleWindowResize(camera, renderer, composer);
 
             animate(0);
+
+            //#endregion
         }
         catch (error)
         {
             console.error('Failed to initialize: ', error);
             isDestroyed = true;
         }
-
-        //#endregion
     });
     //#endregion
 
